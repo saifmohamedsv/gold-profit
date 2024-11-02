@@ -1,101 +1,79 @@
-import Image from "next/image";
+"use client";
+
+import { fetchGoldPrice, setGrams, setMoneySpent } from "@/lib/features/gold-slice";
+import { useAppDispatch } from "@/lib/hooks";
+import { useAppSelector } from "@/lib/hooks";
+import { useGoldProfit } from "@/hooks/use-gold-profit.hook";
+import { ChangeEvent } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const { loading, grams, moneySpent } = useAppSelector((state) => state.gold);
+  const { totalValue, totalProfit, profitPercentage, gram_price } = useGoldProfit();
+  const dispatch = useAppDispatch();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  const handleGramsChange = (e: ChangeEvent<HTMLInputElement>) => dispatch(setGrams(e.target.value));
+  const handleMoneySpentChange = (e: ChangeEvent<HTMLInputElement>) => dispatch(setMoneySpent(e.target.value));
+  const handleRefresh = async () => dispatch(fetchGoldPrice());
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-base-200">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-xl">
+        {/* Header */}
+        <h1 className="text-3xl font-bold text-center text-yellow-600">Gold Profit Calculator</h1>
+        <p className="text-center text-gray-500 italic">Invest wisely, profit patiently.</p>
+
+        {loading && <p className="text-center text-gray-500">Loading...</p>}
+
+        {/* Input Fields */}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Total Grams of Gold</label>
+            <input
+              type="number"
+              value={grams}
+              onChange={handleGramsChange}
+              placeholder="Enter grams"
+              className="input input-bordered w-full"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Money Spent on Gold</label>
+            <input
+              type="number"
+              value={moneySpent}
+              onChange={handleMoneySpentChange}
+              placeholder="Enter amount"
+              className="input input-bordered w-full"
+            />
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        <div className="bg-gray-100 p-4 rounded-lg text-center mt-4">
+          <h2 className="text-lg font-medium text-gray-800">Current Gold Price per Gram</h2>
+          <p className="text-xl font-bold text-gray-700">{gram_price}</p>
+        </div>
+
+        {/* Calculated Total Price */}
+        <div className="bg-yellow-100 p-4 rounded-lg text-center mt-4">
+          <h2 className="text-xl font-semibold text-yellow-800">Total Value of Gold</h2>
+          <p className="text-2xl font-bold text-yellow-600">{totalValue}</p>
+        </div>
+
+        {/* Calculated Total Price */}
+        <div className="bg-green-100 p-4 rounded-lg text-center mt-4">
+          <h2 className="text-xl font-semibold text-green-800">Total Profit</h2>
+          <p className="text-2xl font-bold text-green-600">{totalProfit}</p>
+          <p className="text-2xl font-bold text-green-600">{profitPercentage}</p>
+        </div>
+
+        {/* Refresh Button */}
+        <div className="pt-4">
+          <button onClick={handleRefresh} className="btn btn-accent text-white w-full" disabled={loading}>
+            {loading ? "Refreshing Data" : "Refresh Data"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
